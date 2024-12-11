@@ -31,7 +31,6 @@
 
 .EXAMPLE
     Invoke-THDScore -InputMessage "Sample input message" -Script "path\to\script.py" -PythonVersion "3.10" -Packages @("numpy", "pandas", "matplotlib")
-
 #>
 function Invoke-THDScore {
     param (
