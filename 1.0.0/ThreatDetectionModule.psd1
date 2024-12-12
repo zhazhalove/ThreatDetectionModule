@@ -30,7 +30,7 @@ CompanyName = 'Unknown'
 Copyright = '(c) zhazhalove. All rights reserved.'
 
 # Description of the functionality provided by this module
-Description = 'A module to manage micromamba and LangChain Python environments.'
+Description = 'A module to classify threat detection artifacts'
 
 # Minimum version of the PowerShell engine required by this module
 # PowerShellVersion = ''
