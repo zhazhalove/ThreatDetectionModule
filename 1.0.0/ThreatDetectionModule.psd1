@@ -69,7 +69,7 @@ Description = 'A module to manage micromamba and LangChain Python environments.'
 # NestedModules = @()
 
 # Functions to export from this module, for best performance, do not use wildcards and do not delete the entry, use an empty array if there are no functions to export.
-FunctionsToExport = 'Initialize-MambaRootPrefix', 'Install-PackagesInMicromambaEnvironment', 'Invoke-THDScore', 'Test-InputMessage', 'Test-MicromambaEnvironment', 'New-MicromambaEnvironment', 'Invoke-PythonScript'
+FunctionsToExport = 'Invoke-THDScore', 'Test-InputMessage'
 
 # Cmdlets to export from this module, for best performance, do not use wildcards and do not delete the entry, use an empty array if there are no cmdlets to export.
 CmdletsToExport = '*'
