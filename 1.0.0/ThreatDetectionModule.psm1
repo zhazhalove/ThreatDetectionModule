@@ -53,39 +53,54 @@ function Invoke-THDScore {
         [string[]]$Packages
     )
 
-    # Validate input - throws exception if fails
-    Test-InputMessage -InputMessage $InputMessage
 
-    # Set MAMBA_ROOT_PREFIX environment variable
-    Initialize-MambaRootPrefix
+    try {
+         # Validate input - throws exception if fails
+        Test-InputMessage -InputMessage $InputMessage
 
-    # Dowload micromamaba
-    if ( -not (Get-MicromambaBinary) ) {
-        throw [System.Exception]::new("FAIL - Download micromamba")
-    }
-   
-    # Build micromamba environment
-    if ( -not (New-MicromambaEnvironment -EnvName $MicromambaEnvName -PythonVersion $PythonVersion) )
-    {
-        throw [System.Exception]::new("FAIL - Create micromamba environment - $MicromambaEnvName")
-    }
+        # Set MAMBA_ROOT_PREFIX environment variable
+        Initialize-MambaRootPrefix
 
-    # Install micromamba environment python packages
-    $PkgResults = Install-PackagesInMicromambaEnvironment -EnvName $MicromambaEnvName -Packages $Packages
+        # Dowload micromamaba
+        if ( -not (Get-MicromambaBinary) ) {
+            throw [System.Exception]::new("FAIL - Download micromamba")
+        }
+    
+        # Build micromamba environment
+        if ( -not (New-MicromambaEnvironment -EnvName $MicromambaEnvName -PythonVersion $PythonVersion) )
+        {
+            throw [System.Exception]::new("FAIL - Create micromamba environment - $MicromambaEnvName")
+        }
 
-    foreach($result in $PkgResults) {
-        if (-not $result["Success"]) {
-            throw [System.Exception]::new("$($result["PackageName"]) $($result["Success"])")
+        # Install micromamba environment python packages
+        $PkgResults = Install-PackagesInMicromambaEnvironment -EnvName $MicromambaEnvName -Packages $Packages
+
+        foreach($result in $PkgResults) {
+            if (-not $result["Success"]) {
+                throw [System.Exception]::new("$($result["PackageName"]) $($result["Success"])")
+            }
+        }
+        
+        # Execute the Python script
+        $thdResult = Invoke-PythonScript -ScriptPath $Script -EnvName $MicromambaEnvName -Arguments "-i $InputMessage"
+
+        if ($null -ne $thdResult) {
+            return $thdResult
+        } else {
+            return "Failed to retrieve result from the Python script."
         }
     }
-    
-    # Execute the Python script
-    $thdResult = Invoke-PythonScript -ScriptPath $Script -EnvName $MicromambaEnvName -Arguments "-i $InputMessage"
+    catch {
+        throw [System.Exception]::new($_.Message)
+    }
+    finally {
+        if (-not (Remove-MicromambaEnvironment -EnvName $MicromambaEnvName) ) {
+            throw [System.Exception]::new("FAIL - Remove micromamba environment - $MicromambaEnvName")
+        }
 
-    if ($null -ne $thdResult) {
-        return $thdResult
-    } else {
-        return "Failed to retrieve result from the Python script."
+        if (-not (Remove-Micromamba) ) {
+            throw [System.Exception]::new("FAIL - Remove micromamba files")
+        }
     }
 }
 
