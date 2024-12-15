@@ -71,10 +71,16 @@ function Invoke-THDScore {
     }
 
     # Install micromamba environment python packages
-    Install-PackagesInMicromambaEnvironment -EnvName $MicromambaEnvName -Packages $Packages
+    $PkgResults = Install-PackagesInMicromambaEnvironment -EnvName $MicromambaEnvName -Packages $Packages
+
+    foreach($result in $PkgResults) {
+        if (-not $result["Success"]) {
+            throw [System.Exception]::new("$($result["PackageName"]) $($result["Success"])")
+        }
+    }
     
     # Execute the Python script
-    $thdResult = Invoke-PythonScript -ScriptPath $Script -EnvName $MicromambaEnvName -InputMessage $InputMessage
+    $thdResult = Invoke-PythonScript -ScriptPath $Script -EnvName $MicromambaEnvName -Arguments "-i $InputMessage"
 
     if ($null -ne $thdResult) {
         return $thdResult
