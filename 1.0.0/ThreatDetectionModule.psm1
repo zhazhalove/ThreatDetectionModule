@@ -46,8 +46,8 @@ function Invoke-THDScore {
         [Parameter(Mandatory = $false, HelpMessage = "The micromamba environment to use. Defaults to `"langchain`".")]
         [string]$MicromambaEnvName = "langchain",
         
-        # [Parameter(Mandatory = $false, HelpMessage = "The micromamba environment to use. Defaults to `"langchain`".")]
-        # [string]$MAMBA_ROOT_PREFIX = "$env:APPDATA\micromamba",
+        [Parameter(Mandatory = $false, HelpMessage = "The micromamba root prefix to use. Defaults to `$env:APPDATA\micromamba.")]
+        [string]$MAMBA_ROOT_PREFIX = "$env:APPDATA\micromamba",
 
         [Parameter(Mandatory = $false)]
         [string[]]$Packages
@@ -59,7 +59,7 @@ function Invoke-THDScore {
         Test-InputMessage -InputMessage $InputMessage
 
         # Set MAMBA_ROOT_PREFIX environment variable
-        Initialize-MambaRootPrefix
+        Initialize-MambaRootPrefix -MAMBA_ROOT_PREFIX $MAMBA_ROOT_PREFIX
 
         # Dowload micromamaba
         if ( -not (Get-MicromambaBinary) ) {
