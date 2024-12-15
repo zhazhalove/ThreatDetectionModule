@@ -46,32 +46,39 @@ function Invoke-THDScore {
         [Parameter(Mandatory = $false, HelpMessage = "The micromamba environment to use. Defaults to `"langchain`".")]
         [string]$MicromambaEnvName = "langchain",
         
-        [Parameter(Mandatory = $false, HelpMessage = "The micromamba environment to use. Defaults to `"langchain`".")]
-        [string]$MAMBA_ROOT_PREFIX = "$env:APPDATA\micromamba",
+        # [Parameter(Mandatory = $false, HelpMessage = "The micromamba environment to use. Defaults to `"langchain`".")]
+        # [string]$MAMBA_ROOT_PREFIX = "$env:APPDATA\micromamba",
 
         [Parameter(Mandatory = $false)]
         [string[]]$Packages
     )
 
-    # Set MAMBA_ROOT_PREFIX environment variable
-    $env:MAMBA_ROOT_PREFIX = $MAMBA_ROOT_PREFIX
-
-    # Validate input
+    # Validate input - throws exception if fails
     Test-InputMessage -InputMessage $InputMessage
 
-    # Ensure the micromamba environment is available
-    if (-not (Test-MicromambaEnvironment -EnvName $MicromambaEnvName)) {
-        Initialize-MicromambaEnvironment -EnvName $MicromambaEnvName -PythonVersion $PythonVersion -Packages $Packages
+    # Set MAMBA_ROOT_PREFIX environment variable
+    Initialize-MambaRootPrefix
+
+    # Dowload micromamaba
+    if ( -not (Get-MicromambaBinary) ) {
+        throw [System.Exception]::new("FAIL - Download micromamba")
+    }
+   
+    # Build micromamba environment
+    if ( -not (New-MicromambaEnvironment -EnvName $MicromambaEnvName -PythonVersion $PythonVersion) )
+    {
+        throw [System.Exception]::new("FAIL - Create micromamba environment - $MicromambaEnvName")
     }
 
+    # Install micromamba environment python packages
+    Install-PackagesInMicromambaEnvironment -EnvName $MicromambaEnvName -Packages $Packages
+    
     # Execute the Python script
     $thdResult = Invoke-PythonScript -ScriptPath $Script -EnvName $MicromambaEnvName -InputMessage $InputMessage
 
     if ($null -ne $thdResult) {
-        # Write-Host "Score: $($thdResult.score)`n`nReason: $($thdResult.reason)" -ForegroundColor Green
-        return "Score: $($thdResult.score)`n`nReason: $($thdResult.reason)"
+        return $thdResult
     } else {
-        # Write-Host "Failed to retrieve result from the Python script." -ForegroundColor Red
         return "Failed to retrieve result from the Python script."
     }
 }
@@ -106,15 +113,6 @@ function Test-InputMessage {
         $invalidCharsList = ($invalidChars -join ', ')
         throw "InputMessage contains invalid characters: $invalidCharsList"
     }
-
-    # # Escape remaining special characters if needed
-    # $escapedMessage = $InputMessage -replace '[\`\$@<>\*\"''|;&\(\)\{\}\[\]\~\%\^\/]', {
-    #     "`$_"
-    # }
-
-    # Output the sanitized input message
-    Write-Host "Sanitized Input Message: $escapedMessage"
-    return $escapedMessage
 }
 
 Export-ModuleMember -Function Invoke-THDScore, Test-InputMessage
