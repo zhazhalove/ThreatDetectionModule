@@ -91,16 +91,11 @@ function Invoke-THDScore {
         }
     }
     catch {
-        throw [System.Exception]::new($_.Message)
+        throw [System.Exception]::new("Error in Invoke-THDScore: $($_.Exception.Message)", $_.Exception)
     }
     finally {
-        if (-not (Remove-MicromambaEnvironment -EnvName $MicromambaEnvName) ) {
-            throw [System.Exception]::new("FAIL - Remove micromamba environment - $MicromambaEnvName")
-        }
-
-        if (-not (Remove-Micromamba) ) {
-            throw [System.Exception]::new("FAIL - Remove micromamba files")
-        }
+        Remove-MicromambaEnvironment -EnvName $MicromambaEnvName | Out-Null
+        Remove-Micromamba | Out-Null
     }
 }
 
@@ -123,7 +118,7 @@ function Test-InputMessage {
 
     # Check if the input is null, empty, or whitespace
     if ([string]::IsNullOrWhiteSpace($InputMessage)) {
-        throw "InputMessage cannot be null, empty, or whitespace."
+        throw [System.Exception]::new("InputMessage cannot be null, empty, or whitespace.")
     }
 
     # Allow only safe characters (alphanumeric, space, and limited punctuation)
@@ -132,7 +127,7 @@ function Test-InputMessage {
         # Find invalid characters
         $invalidChars = ($InputMessage -split '') | Where-Object { $_ -notmatch '[a-zA-Z0-9\s\.\,\-_]' }
         $invalidCharsList = ($invalidChars -join ', ')
-        throw "InputMessage contains invalid characters: $invalidCharsList"
+        throw [System.Exception]::new("InputMessage contains invalid characters: $invalidCharsList")
     }
 }
 
