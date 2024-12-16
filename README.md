@@ -1,6 +1,3 @@
-Here's a `README.md` file for your GitHub project based on the provided code:
-
-```markdown
 # Threat Detection Score
 
 ## Overview
@@ -59,4 +56,4 @@ The `Invoke-THDScore` function includes error handling to manage exceptions duri
 ## License
 
 This project is licensed under the MIT License.
-```
+
