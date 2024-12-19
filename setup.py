@@ -6,7 +6,7 @@ setup(
     description="A package for cybersecurity threat analysis and detection",
     author="zhazhalove",
     author_email="zhazhalove@example.com",
-    packages=find_packages(),
+    packages=find_packages(include=["threat_detection_score*"]),
     install_requires=[
         "typer",
         "langchain",
